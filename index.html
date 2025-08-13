@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>O mu Bu mu?</title>
+  <style>
+    body {
+      margin: 0;
+      background: url('images/background.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      color: #fff;
+    }
+    .header img {
+      width: 120px;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+    }
+    h1 {
+      margin-top: 40px;
+      font-size: 36px;
+    }
+    .round-title {
+      font-size: 22px;
+      margin-top: 10px;
+      color: #ff0;
+    }
+    .matchup {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 60px;
+      gap: 60px;
+    }
+    .option {
+      cursor: pointer;
+    }
+    .option img {
+      width: 240px;
+      aspect-ratio: 4 / 5;
+      object-fit: cover;
+      border: 4px solid white;
+      border-radius: 16px;
+      transition: transform 0.2s;
+    }
+    .option img:hover {
+      transform: scale(1.03);
+    }
+    #nextBtn {
+      margin-top: 30px;
+      padding: 10px 20px;
+      font-size: 18px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="images/logo.png" alt="AltDünya Logo" />
+    <h1>O mu Bu mu?</h1>
+    <div class="round-title" id="roundInfo">Round 1</div>
+  </div>
+  <div id="matchup" class="matchup"></div>
+  <button id="nextBtn" onclick="nextMatch()">Sonraki Eşleşme</button>
+
+  <script>
+    const imageCount = 64; // toplam seçenek sayısı (çift sayı: 32, 64, 128 olabilir)
+    const options = Array.from({ length: imageCount }, (_, i) => ({
+      img: `images/resim_${i + 1}.jpg`
+    }));
+
+    let currentRound = [...options];
+    let nextRound = [];
+    let matchIndex = 0;
+    let roundNumber = 1;
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    shuffle(currentRound);
+
+    function renderMatch() {
+      const matchup = document.getElementById("matchup");
+      const nextBtn = document.getElementById("nextBtn");
+      const roundInfo = document.getElementById("roundInfo");
+
+      if (matchIndex >= currentRound.length) {
+        if (currentRound.length === 1) {
+          matchup.innerHTML = `
+            <h2>Şampiyon</h2>
+            <img src="${currentRound[0].img}" style="width:240px;aspect-ratio:4/5;object-fit:cover;border:6px solid gold;border-radius:20px;" />
+          `;
+          roundInfo.innerText = "Final";
+          nextBtn.style.display = "none";
+          return;
+        }
+        currentRound = [...nextRound];
+        shuffle(currentRound);
+        nextRound = [];
+        matchIndex = 0;
+        roundNumber++;
+        roundInfo.innerText = "Round " + roundNumber;
+      }
+
+      const a = currentRound[matchIndex];
+      const b = currentRound[matchIndex + 1];
+
+      matchup.innerHTML = `
+        <div class="option" onclick="choose(0)">
+          <img src="${a.img}" alt="" />
+        </div>
+        <div class="option" onclick="choose(1)">
+          <img src="${b.img}" alt="" />
+        </div>
+      `;
+      nextBtn.style.display = "none";
+    }
+
+    function choose(selected) {
+      const winner = currentRound[matchIndex + selected];
+      nextRound.push(winner);
+      matchIndex += 2;
+      document.getElementById("nextBtn").style.display = "inline-block";
+    }
+
+    function nextMatch() {
+      renderMatch();
+    }
+
+    window.onload = function () {
+      renderMatch();
+    };
+  </script>
+</body>
+</html>
