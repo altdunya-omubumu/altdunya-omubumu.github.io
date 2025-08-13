@@ -1,141 +1,127 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <title>O mu Bu mu?</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AltDünya · O Mu Bu Mu – GitHub Pages Dizini</title>
+  <meta name="description" content="altdunya-omubumu kullanıcısının GitHub Pages ile yayındaki public projelerini listeler." />
   <style>
-    body {
-      margin: 0;
-      background: url('images/background.jpg') no-repeat center center fixed;
-      background-size: cover;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      color: #fff;
-    }
-    .header img {
-      width: 120px;
-      position: absolute;
-      top: 20px;
-      left: 20px;
-    }
-    h1 {
-      margin-top: 40px;
-      font-size: 36px;
-    }
-    .round-title {
-      font-size: 22px;
-      margin-top: 10px;
-      color: #ff0;
-    }
-    .matchup {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-top: 60px;
-      gap: 60px;
-    }
-    .option {
-      cursor: pointer;
-    }
-    .option img {
-      width: 240px;
-      aspect-ratio: 4 / 5;
-      object-fit: cover;
-      border: 4px solid white;
-      border-radius: 16px;
-      transition: transform 0.2s;
-    }
-    .option img:hover {
-      transform: scale(1.03);
-    }
-    #nextBtn {
-      margin-top: 30px;
-      padding: 10px 20px;
-      font-size: 18px;
-      display: none;
-    }
+    :root{ --bg:#0a0b10; --fg:#eaf0ff; --muted:#93a4c7; --card:#0e1220; --card2:#11162a; --border:#1a2340; }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg); color:var(--fg); font:16px/1.6 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial}
+    a{color:inherit;text-decoration:none}
+    .shell{max-width:1100px;margin:0 auto;padding:28px}
+    .mast{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+    .brand{display:flex;align-items:center;gap:14px}
+    .logo{height:180px;width:auto;object-fit:contain}
+    .sep{height:38px;width:1px;background:var(--muted);}
+    .titles h1{margin:0;font-size:clamp(22px,4vw,32px)}
+    .titles .sub{margin-top:4px;color:var(--muted);font-size:14px}
+    .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+    .chip{border:1px solid var(--border);background:var(--card2);border-radius:14px;padding:8px 12px;font-size:14px}
+    .search{flex:1;min-width:240px;display:flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--card2);border-radius:14px;padding:8px 12px}
+    .search input{flex:1;border:0;outline:0;background:transparent;color:var(--fg);font:inherit}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+    .card{border:1px solid var(--border);background:var(--card2);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px;transition:transform .15s ease}
+    .card:hover{transform:translateY(-2px)}
+    .card h3{margin:0;font-size:18px}
+    .meta{font-size:12px;color:var(--muted)}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:8px 12px;font-size:13px}
+    .status{min-height:28px;display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .spinner{width:18px;height:18px;border-radius:50%;border:3px solid #0000;border-top-color:var(--fg);animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .note{margin-top:18px;color:var(--muted);font-size:13px}
+    .bad{padding:14px;border:1px solid red;background:#300;border-radius:12px}
   </style>
 </head>
 <body>
-  <div class="header">
-    <img src="images/logo.png" alt="AltDünya Logo" />
-    <h1>O mu Bu mu?</h1>
-    <div class="round-title" id="roundInfo">Round 1</div>
+  <div class="shell">
+    <header class="mast">
+      <div class="brand">
+        <img class="logo" src="images/altdunya-logo.png" alt="AltDünya" onerror="this.style.display='none'"/>
+        <div class="sep"></div>
+        <img class="logo" src="images/omu-bu-mu-logo.png" alt="O Mu Bu Mu" onerror="this.style.display='none'"/>
+      </div>
+      <div class="titles">
+        <h1>GitHub Pages Dizini</h1>
+        <div class="sub">altdunya-omubumu · tüm yayınlanan projeler</div>
+      </div>
+    </header>
+    <div class="toolbar">
+      <div class="chip">Public + Pages aktif repos</div>
+      <div class="chip">Otomatik liste</div>
+      <label class="search">
+        <input id="search" placeholder="Projelerde ara… (repo adı, açıklama)" />
+      </label>
+    </div>
+    <div id="status" class="status"></div>
+    <section id="grid" class="grid" aria-live="polite"></section>
+    <p class="note">Not: GitHub anonim API limiti ~saatte 60 istek. Liste yalnızca <strong>public</strong> ve <strong>Pages aktif</strong> repoları gösterir.</p>
   </div>
-  <div id="matchup" class="matchup"></div>
-  <button id="nextBtn" onclick="nextMatch()">Sonraki Eşleşme</button>
-
   <script>
-    const imageCount = 64; // toplam seçenek sayısı (çift sayı: 32, 64, 128 olabilir)
-    const options = Array.from({ length: imageCount }, (_, i) => ({
-      img: `images/resim_${i + 1}.jpg`
-    }));
-
-    let currentRound = [...options];
-    let nextRound = [];
-    let matchIndex = 0;
-    let roundNumber = 1;
-
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
+  const USERNAME = "altdunya-omubumu";
+  const $ = s => document.querySelector(s);
+  const grid = $('#grid');
+  const statusBox = $('#status');
+  const searchInput = $('#search');
+  let allRepos = [], filtered = [];
+  function setStatus(content){
+    statusBox.innerHTML = '';
+    if (!content) return;
+    if (content === 'loading'){ statusBox.innerHTML = '<div class="spinner"></div><span>Yükleniyor…</span>'; }
+    else if (content.type === 'error'){ statusBox.innerHTML = '<div class="bad">'+content.msg+'</div>'; }
+    else if (content.type === 'info'){ statusBox.innerHTML = '<span>'+content.msg+'</span>'; }
+  }
+  function escapeHtml(str){ return str.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s])); }
+  function cardTemplate(repo){
+    const pagesUrl = "https://" + USERNAME + ".github.io/" + repo.name + "/";
+    const repoUrl = repo.html_url;
+    const updated = new Date(repo.updated_at).toLocaleDateString();
+    const desc = repo.description ? escapeHtml(repo.description) : '';
+    return '<article class="card">'+
+      '<h3><a href="'+pagesUrl+'" target="_blank" rel="noopener noreferrer">'+repo.name+'</a></h3>'+
+      '<div class="meta">Güncelleme: '+updated+'</div>'+
+      (desc ? '<div>'+desc+'</div>' : '')+
+      '<div class="row">'+
+        '<a class="btn" href="'+pagesUrl+'" target="_blank">Siteyi Aç</a>'+
+        '<a class="btn" href="'+repoUrl+'" target="_blank">GitHub</a>'+
+      '</div>'+
+    '</article>';
+  }
+  function render(){
+    const q = searchInput.value.trim().toLowerCase();
+    filtered = allRepos.filter(r => !q || (r.name.toLowerCase().includes(q) || (r.description||'').toLowerCase().includes(q)));
+    grid.innerHTML = '';
+    if (filtered.length === 0){ setStatus({type:'info', msg:'Uygun repo bulunamadı'}); return; }
+    grid.insertAdjacentHTML('beforeend', filtered.map(cardTemplate).join(''));
+    setStatus({type:'info', msg: filtered.length + ' site bulundu'});
+  }
+  async function fetchAllRepos(){
+    const per = 100; let page = 1; let out = [];
+    while(true){
+      const url = "https://api.github.com/users/" + encodeURIComponent(USERNAME) + "/repos?per_page=" + per + "&page=" + page + "&sort=updated";
+      const res = await fetch(url, { headers: { 'Accept': 'application/vnd.github+json' } });
+      if(!res.ok){ throw new Error(res.status===404 ? 'Kullanıcı bulunamadı' : 'GitHub API hata: '+res.status); }
+      const data = await res.json();
+      out = out.concat(data);
+      const link = res.headers.get('Link');
+      if(!link || !link.includes('rel="next"')) break;
+      page++;
     }
-
-    shuffle(currentRound);
-
-    function renderMatch() {
-      const matchup = document.getElementById("matchup");
-      const nextBtn = document.getElementById("nextBtn");
-      const roundInfo = document.getElementById("roundInfo");
-
-      if (matchIndex >= currentRound.length) {
-        if (currentRound.length === 1) {
-          matchup.innerHTML = `
-            <h2>Şampiyon</h2>
-            <img src="${currentRound[0].img}" style="width:240px;aspect-ratio:4/5;object-fit:cover;border:6px solid gold;border-radius:20px;" />
-          `;
-          roundInfo.innerText = "Final";
-          nextBtn.style.display = "none";
-          return;
-        }
-        currentRound = [...nextRound];
-        shuffle(currentRound);
-        nextRound = [];
-        matchIndex = 0;
-        roundNumber++;
-        roundInfo.innerText = "Round " + roundNumber;
-      }
-
-      const a = currentRound[matchIndex];
-      const b = currentRound[matchIndex + 1];
-
-      matchup.innerHTML = `
-        <div class="option" onclick="choose(0)">
-          <img src="${a.img}" alt="" />
-        </div>
-        <div class="option" onclick="choose(1)">
-          <img src="${b.img}" alt="" />
-        </div>
-      `;
-      nextBtn.style.display = "none";
-    }
-
-    function choose(selected) {
-      const winner = currentRound[matchIndex + selected];
-      nextRound.push(winner);
-      matchIndex += 2;
-      document.getElementById("nextBtn").style.display = "inline-block";
-    }
-
-    function nextMatch() {
-      renderMatch();
-    }
-
-    window.onload = function () {
-      renderMatch();
-    };
+    return out;
+  }
+  async function init(){
+    setStatus('loading');
+    try{
+      const repos = await fetchAllRepos();
+      allRepos = repos.filter(r => r.has_pages);
+      if(allRepos.length===0){ setStatus({type:'error', msg:'Pages açık public repo bulunamadı.'}); return; }
+      render();
+    }catch(err){ setStatus({type:'error', msg: err.message || 'Bilinmeyen hata'}); }
+  }
+  searchInput.addEventListener('input', render);
+  init();
   </script>
 </body>
 </html>
